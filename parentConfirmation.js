@@ -556,8 +556,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // 이미지 데이터 URL 생성
-        const imageData = previewCanvas.toDataURL('image/png');
+        // 원본 이미지 데이터 또는 현재 캔버스에서 이미지 데이터 가져오기
+        let imageData;
+        
+        if (originalPreviewImage && scale !== 1) {
+            // 확대된 상태라면 원본 이미지 데이터 사용
+            console.log('원본 이미지로 저장합니다 (확대/축소 무시)');
+            
+            // 임시 캔버스 생성하여 원본 이미지 그리기
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = previewCanvas.width;
+            tempCanvas.height = previewCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // 원본 이미지 그리기
+            tempCtx.drawImage(originalPreviewImage, 0, 0, tempCanvas.width, tempCanvas.height);
+            
+            // 이미지 데이터 URL 생성
+            imageData = tempCanvas.toDataURL('image/png');
+        } else {
+            // 확대하지 않았거나 원본 이미지가 없는 경우 현재 캔버스 사용
+            imageData = previewCanvas.toDataURL('image/png');
+        }
         
         // 현재 날짜 및 시간으로 파일명 생성
         const now = new Date();

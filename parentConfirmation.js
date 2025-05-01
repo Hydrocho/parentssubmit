@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeButton = document.querySelector('.close-button');
     const confirmSaveButton = document.getElementById('confirmSave');
     
+    // 미리보기 확대/축소 관련 변수
+    let scale = 1;
+    let lastDistance = 0;
+    let isZooming = false;
+    let originalPreviewImage = null;
+    
     // 캔버스 컨텍스트
     const studentCtx = studentSigCanvas ? studentSigCanvas.getContext('2d') : null;
     const guardianCtx = guardianSigCanvas ? guardianSigCanvas.getContext('2d') : null;
@@ -177,6 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // 모달 표시
             if (previewModal) {
                 previewModal.style.display = 'block';
+                
+                // 확대/축소 초기화
+                scale = 1;
+                setupZoom();
             }
         });
     }
@@ -215,6 +225,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeButton) {
         closeButton.addEventListener('click', function() {
             previewModal.style.display = 'none';
+            // 확대/축소 상태 초기화
+            scale = 1;
+            originalPreviewImage = null;
         });
     }
     
@@ -398,6 +411,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const ctx = previewCanvas.getContext('2d');
         
+        // 확대/축소 상태 초기화
+        scale = 1;
+        originalPreviewImage = null;
+        
         // 양식 이미지 로드
         const formImage = new Image();
         formImage.src = 'form.png';
@@ -544,8 +561,40 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 현재 날짜 및 시간으로 파일명 생성
         const now = new Date();
-        const fileName = `결석신청서_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.png`;
+        const fileName = `학부모확인서_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.png`;
         
+        // iOS 디바이스 확인
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        // 공유 API 지원 확인
+        if (navigator.share && isIOS) {
+            // 데이터 URL을 Blob으로 변환
+            fetch(imageData)
+                .then(res => res.blob())
+                .then(blob => {
+                    const file = new File([blob], fileName, { type: 'image/png' });
+                    
+                    // 공유 다이얼로그 표시
+                    navigator.share({
+                        title: '학부모 확인서',
+                        text: '학부모 확인서가 생성되었습니다.',
+                        files: [file]
+                    }).then(() => {
+                        console.log('공유 성공');
+                    }).catch((error) => {
+                        console.error('공유 실패:', error);
+                        // 공유 실패 시 일반 다운로드로 대체
+                        downloadImage(imageData, fileName);
+                    });
+                });
+        } else {
+            // 일반 다운로드 방식
+            downloadImage(imageData, fileName);
+        }
+    }
+    
+    // 일반 다운로드 함수
+    function downloadImage(imageData, fileName) {
         // 다운로드 링크 생성 및 클릭
         const downloadLink = document.createElement('a');
         downloadLink.href = imageData;
@@ -556,7 +605,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(downloadLink);
         
         console.log('이미지 저장 완료');
-        alert('이미지가 저장되었습니다.');
+        
+        // iOS 사용자를 위한 추가 안내
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+            alert('이미지가 다운로드되었습니다. 사진첩에 저장하려면 이미지를 길게 누르거나 공유 버튼을 사용하세요.');
+        } else {
+            alert('이미지가 저장되었습니다.');
+        }
     }
     
     // 숫자 앞에 0 채우기
@@ -591,5 +646,109 @@ document.addEventListener('DOMContentLoaded', function() {
     function getSelectedAbsenceType() {
         const selectedRadio = document.querySelector('input[name="absenceType"]:checked');
         return selectedRadio ? selectedRadio.value : '결석'; // 기본값은 '결석'
+    }
+    
+    // 미리보기 확대/축소 설정
+    function setupZoom() {
+        if (!previewCanvas) return;
+        
+        // 터치 이벤트 리스너 추가
+        previewCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        previewCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        previewCanvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+        
+        // 더블 탭으로 확대/축소 리셋
+        previewCanvas.addEventListener('dblclick', resetZoom);
+    }
+    
+    // 터치 시작 이벤트 처리
+    function handleTouchStart(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            isZooming = true;
+            
+            // 두 손가락 사이의 거리 계산
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            lastDistance = calculateDistance(touch1, touch2);
+            
+            // 원본 이미지 저장 (아직 저장되지 않았다면)
+            if (!originalPreviewImage) {
+                originalPreviewImage = new Image();
+                originalPreviewImage.src = previewCanvas.toDataURL();
+            }
+        }
+    }
+    
+    // 터치 이동 이벤트 처리
+    function handleTouchMove(e) {
+        if (!isZooming || e.touches.length !== 2) return;
+        
+        e.preventDefault();
+        
+        // 새로운 거리 계산
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const newDistance = calculateDistance(touch1, touch2);
+        
+        // 스케일 조정 (거리 변화에 따라)
+        const newScale = scale * (newDistance / lastDistance);
+        
+        // 스케일 제한 (0.5 ~ 3.0)
+        if (newScale >= 0.5 && newScale <= 3.0) {
+            scale = newScale;
+            redrawWithScale();
+        }
+        
+        lastDistance = newDistance;
+    }
+    
+    // 터치 종료 이벤트 처리
+    function handleTouchEnd(e) {
+        isZooming = false;
+    }
+    
+    // 확대/축소 초기화
+    function resetZoom() {
+        scale = 1;
+        redrawWithScale();
+    }
+    
+    // 두 터치 포인트 사이의 거리 계산
+    function calculateDistance(touch1, touch2) {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    // 스케일에 따라 캔버스 다시 그리기
+    function redrawWithScale() {
+        if (!previewCanvas || !originalPreviewImage) return;
+        
+        const ctx = previewCanvas.getContext('2d');
+        
+        // 캔버스 크기 저장
+        const width = previewCanvas.width;
+        const height = previewCanvas.height;
+        
+        // 캔버스 지우기
+        ctx.clearRect(0, 0, width, height);
+        
+        // 스케일 적용하여 다시 그리기
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.scale(scale, scale);
+        ctx.translate(-width / 2, -height / 2);
+        
+        // 원본 이미지 그리기
+        if (originalPreviewImage.complete) {
+            ctx.drawImage(originalPreviewImage, 0, 0, width, height);
+        } else {
+            originalPreviewImage.onload = function() {
+                ctx.drawImage(originalPreviewImage, 0, 0, width, height);
+            };
+        }
+        
+        ctx.restore();
     }
 });

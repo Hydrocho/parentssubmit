@@ -1,0 +1,203 @@
+:root {
+    --primary-color: #4a6da7;
+    --secondary-color: #f5f5f5;
+    --accent-color: #3a5683;
+    --text-color: #333;
+    --border-color: #ccc;
+    --border-radius: 5px;
+    --spacing: 1rem;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif, Arial;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: #f9f9f9;
+    padding: var(--spacing);
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: var(--spacing);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: var(--spacing);
+    color: var(--primary-color);
+}
+
+h2 {
+    margin-bottom: calc(var(--spacing) * 0.5);
+    font-size: 1.2rem;
+    color: var(--accent-color);
+}
+
+.form-section {
+    margin-bottom: calc(var(--spacing) * 2);
+    padding: var(--spacing);
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius);
+}
+
+.form-group {
+    margin-bottom: var(--spacing);
+}
+
+label {
+    display: block;
+    margin-bottom: calc(var(--spacing) * 0.25);
+    font-weight: bold;
+}
+
+input, textarea {
+    width: 100%;
+    padding: calc(var(--spacing) * 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.signature-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+canvas {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: white;
+    margin-bottom: calc(var(--spacing) * 0.5);
+    touch-action: none;
+}
+
+button {
+    padding: calc(var(--spacing) * 0.5) var(--spacing);
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: var(--accent-color);
+}
+
+button#clearStudentSignature,
+button#clearGuardianSignature {
+    background-color: #f44336;
+    margin-top: calc(var(--spacing) * 0.25);
+}
+
+button#clearStudentSignature:hover,
+button#clearGuardianSignature:hover {
+    background-color: #d32f2f;
+}
+
+.form-section:last-of-type {
+    display: flex;
+    justify-content: space-between;
+}
+
+#previewButton {
+    background-color: #4CAF50;
+}
+
+#previewButton:hover {
+    background-color: #388E3C;
+}
+
+/* 모달 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: var(--spacing);
+    border-radius: var(--border-radius);
+    width: 80%;
+    max-width: 800px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    color: black;
+}
+
+.preview-container {
+    margin: var(--spacing) 0;
+    text-align: center;
+}
+
+#previewCanvas {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--border-color);
+}
+
+#confirmSave {
+    display: block;
+    margin: 0 auto;
+    background-color: #4CAF50;
+}
+
+#confirmSave:hover {
+    background-color: #388E3C;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 600px) {
+    .container {
+        padding: calc(var(--spacing) * 0.5);
+    }
+    
+    .form-section {
+        padding: calc(var(--spacing) * 0.5);
+    }
+    
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+}

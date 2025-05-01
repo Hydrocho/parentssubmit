@@ -1,0 +1,22 @@
+{
+  "name": "학부모 확인서",
+  "short_name": "학부모확인서",
+  "description": "학부모 확인서를 작성하고 저장하는 웹앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4a6da7",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait"
+}

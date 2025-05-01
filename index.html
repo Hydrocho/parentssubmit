@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학부모 확인서</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon-192x192.png">
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+    <div class="container">
+        <h1>학부모 확인서</h1>
+        
+        <form id="absenceForm">
+            <div class="form-section">
+                <h2>학생 정보</h2>
+                <div class="form-group">
+                    <label for="grade">학년</label>
+                    <input type="number" id="grade" required min="1" max="6">
+                </div>
+                <div class="form-group">
+                    <label for="class">반</label>
+                    <input type="number" id="class" required min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label for="number">번호</label>
+                    <input type="number" id="number" required min="1" max="50">
+                </div>
+                <div class="form-group">
+                    <label for="studentName">학생 이름</label>
+                    <input type="text" id="studentName" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>기간</h2>
+                <div class="form-group">
+                    <label for="startDate">시작일</label>
+                    <input type="date" id="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="endDate">종료일</label>
+                    <input type="date" id="endDate" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>사유</h2>
+                <div class="absence-type-container" style="margin-bottom: 15px;">
+                    <div class="absence-type-options" style="display: flex; gap: 15px;">
+                        <div>
+                            <input type="radio" name="absenceType" id="type-결석" value="결석" checked>
+                            <label for="type-결석">결석</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="absenceType" id="type-지각" value="지각">
+                            <label for="type-지각">지각</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="absenceType" id="type-조퇴" value="조퇴">
+                            <label for="type-조퇴">조퇴</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="absenceType" id="type-결과" value="결과">
+                            <label for="type-결과">결과</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <textarea id="reason" rows="4" required></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>학생 서명</h2>
+                <div class="signature-area">
+                    <canvas id="studentSignature" width="300" height="150"></canvas>
+                    <button type="button" id="clearStudentSignature">지우기</button>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>보호자 정보</h2>
+                <div class="form-group">
+                    <label for="guardianName">보호자 이름</label>
+                    <input type="text" id="guardianName" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>보호자 서명</h2>
+                <div class="signature-area">
+                    <canvas id="guardianSignature" width="300" height="150"></canvas>
+                    <button type="button" id="clearGuardianSignature">지우기</button>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <button type="button" id="previewButton">미리보기</button>
+                <button type="button" id="saveButton">저장하기</button>
+            </div>
+        </form>
+
+        <div id="previewModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>미리보기</h2>
+                <div class="preview-container">
+                    <canvas id="previewCanvas"></canvas>
+                </div>
+                <button id="confirmSave">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 학부모 확인서 기능 구현 -->
+    <script src="parentConfirmation.js"></script>
+    
+    <script>
+        // 서비스 워커 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('서비스 워커 등록 성공:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('서비스 워커 등록 실패:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
